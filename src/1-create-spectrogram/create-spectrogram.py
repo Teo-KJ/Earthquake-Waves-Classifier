@@ -8,21 +8,15 @@ Adapted from Kaelynn Rose
 on 3/11/2021
 '''
 
-import datetime
-import io
 import os
 import sys
 import time
-import timeit
 
 import h5py
-import librosa
-import librosa.display
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import skimage
 from joblib import Parallel, delayed
 from PIL import Image
 
@@ -38,10 +32,10 @@ date_cols = col_dtypes.get_date_cols()
 
 ############################# USER INPUT #############################
 
-data_folder = "../../data/"
+data_folder = "../../data/" # root data folder
 dpi = 50 # spectrogram image resolution
 
-chunk_id = 2 # chunk 1 is noise
+chunk_id = 2 # chunk 1 is noise, chunks 2-6 are earthquake signals
 assert chunk_id > 0 and chunk_id <= 6
 
 csv_pth = os.path.join(data_folder, f'raw/chunk{chunk_id}/chunk{chunk_id}.csv') # chunk metadata
@@ -64,12 +58,6 @@ print(f'No. of waveforms: {len(eqlist)}')
 #random_signals = np.random.choice(eqlist,80000,replace=False) # turn on to get random sample of signals
 starts = list(np.linspace(data_start, data_end-data_interval, int((data_end-data_start)/data_interval)))
 ends = list(np.linspace(data_interval, data_end, int((data_end-data_start)/data_interval)))
-# set = str(chunk)
-
-def scale_minmax(X, min=0.0, max=1.0):
-    X_std = (X - X.min()) / (X.max() - X.min())
-    X_scaled = X_std * (max - min) + min
-    return X_scaled
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
@@ -139,9 +127,9 @@ for cnt, n in enumerate(range(len(starts))):
 
 
     # create images for selected data (runs in parallel using joblib)
-    start = time.time(); # print(start)
+    start = time.time();
     Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,len(traces))) # run make_images loop in parallel on all but 2 cores for each value of i
     # Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,10))
-    # make_images(1000)
+    # make_images(1000) # to generate a single spectrogram img w/o multi-processing
     end = time.time()
     print(f' | Took {end-start} s')
