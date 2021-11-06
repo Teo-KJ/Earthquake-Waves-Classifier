@@ -11,6 +11,7 @@ on 3/11/2021
 import os
 import sys
 import time
+from pathlib import Path
 
 import h5py
 import matplotlib
@@ -38,16 +39,21 @@ dpi = 50 # spectrogram image resolution
 chunk_id = 2 # chunk 1 is noise, chunks 2-6 are earthquake signals
 assert chunk_id > 0 and chunk_id <= 6
 
-csv_pth = os.path.join(data_folder, f'raw/chunk{chunk_id}/chunk{chunk_id}.csv') # chunk metadata
-eqpath = os.path.join(data_folder, f'raw/chunk{chunk_id}/chunk{chunk_id}.hdf5') # chunk earthquake data
-print(eqpath)
-chunk = pd.read_csv(csv_pth, dtype=dtypes, parse_dates=date_cols, encoding='utf-8')
-
 data_start = 0 # select start of data rows you want to pull from that chunk
 data_end = 200000 # select end of data rows you want to pull from that chunk
-data_interval = 5000 # select interval you'd like to pull (smaller interval with more loops may run faster)
+data_interval = 500 # select interval you'd like to pull (smaller interval with more loops may run faster)
 
 save_folder = data_folder + 'images/' # folder to save spectrogram images
+
+########################### INIT VARIABLES ############################
+
+csv_pth = os.path.join(data_folder, f'raw/chunk{chunk_id}/chunk{chunk_id}.csv') # chunk metadata
+eqpath = os.path.join(data_folder, f'raw/chunk{chunk_id}/chunk{chunk_id}.hdf5') # chunk earthquake data
+
+chunk = pd.read_csv(csv_pth, dtype=dtypes, parse_dates=date_cols, encoding='utf-8')
+print(eqpath)
+
+Path(save_folder).mkdir(parents=True, exist_ok=True)
 
 #######################################################################
 
@@ -63,6 +69,7 @@ def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
 
 def spectrogram_arr(data, dpi):
+    # import matplotlib here to prevent multi-processing error
     import matplotlib
     import matplotlib.pyplot as plt
     matplotlib.use('Agg')
@@ -132,4 +139,4 @@ for cnt, n in enumerate(range(len(starts))):
     # Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,10))
     # make_images(1000) # to generate a single spectrogram img w/o multi-processing
     end = time.time()
-    print(f' | Took {end-start} s')
+    print(f' | Took {end-start:.5f} s')
