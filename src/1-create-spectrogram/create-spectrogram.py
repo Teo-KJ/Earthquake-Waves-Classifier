@@ -135,7 +135,7 @@ for cnt, n in enumerate(range(len(starts))):
 
     # create images for selected data (runs in parallel using joblib)
     start = time.time();
-    Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,len(traces))) # run make_images loop in parallel on all but 2 cores for each value of i
+    Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,len(traces))) # run make_images loop in parallel on all but 1 core
     # Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,10))
     # make_images(1000) # to generate a single spectrogram img w/o multi-processing
     end = time.time()
