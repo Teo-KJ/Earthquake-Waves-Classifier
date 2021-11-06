@@ -11,6 +11,7 @@ on 3/11/2021
 import datetime
 import io
 import os
+import sys
 import time
 import timeit
 
@@ -27,7 +28,7 @@ from PIL import Image
 
 from col_dtypes import ColDataTypes
 
-matplotlib.use('TKAgg')
+matplotlib.use('Agg')
 
 ############################# INIT VARIABLES #############################
 
@@ -49,17 +50,17 @@ print(eqpath)
 chunk = pd.read_csv(csv_pth, dtype=dtypes, parse_dates=date_cols, encoding='utf-8')
 
 data_start = 0 # select start of data rows you want to pull from that chunk
-data_end = 100000 # select end of data rows you want to pull from that chunk
+data_end = 200000 # select end of data rows you want to pull from that chunk
 data_interval = 5000 # select interval you'd like to pull (smaller interval with more loops may run faster)
 
-save_folder = data_folder + 'images/' # big_data_random/waves/'
+save_folder = data_folder + 'images/' # folder to save spectrogram images
 
 #######################################################################
 
 ## Make images
 
 eqlist = chunk['trace_name'].to_list()
-print(len(eqlist))
+print(f'No. of waveforms: {len(eqlist)}')
 #random_signals = np.random.choice(eqlist,80000,replace=False) # turn on to get random sample of signals
 starts = list(np.linspace(data_start, data_end-data_interval, int((data_end-data_start)/data_interval)))
 ends = list(np.linspace(data_interval, data_end, int((data_end-data_start)/data_interval)))
@@ -74,6 +75,10 @@ def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
 
 def spectrogram_arr(data, dpi):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    matplotlib.use('Agg')
+
     fig, ax = plt.subplots(figsize=(3,2), dpi=dpi)
     ax.specgram(data, Fs=100, NFFT=256, cmap='gray', vmin=-10, vmax=25);
     fig.patch.set_facecolor('black')
@@ -93,7 +98,6 @@ def spectrogram_arr(data, dpi):
 
     return img_arr
 
-
 for cnt, n in enumerate(range(len(starts))):
     traces = eqlist[int(starts[n]):int(ends[n])]
     path = eqpath
@@ -101,20 +105,20 @@ for cnt, n in enumerate(range(len(starts))):
     def make_images(i):
         # retrieving selected waveforms from the hdf5 file:
         try:
+            # print('working on waveform ' + str(traces[i]) + ' chunk ' + str(cnt) + ' number ' + str(i))
             dtfl = h5py.File(path, 'r')
             dataset = dtfl.get('data/' + str(traces[i]))
 
             img_save_pth = save_folder + traces[i] + '.png'
-            # waveforms, 3 channels: first row: E channel, second row: N channel, third row: Z channel
             data = np.array(dataset)
-            print('working on waveform ' + str(traces[i]) + ' chunk ' + str(cnt) + ' number ' + str(i))
             
+            # waveforms, 3 channels: first row: E channel, second row: N channel, third row: Z channel
             arr_E = spectrogram_arr(data[:,0], dpi)
-            print(arr_E.shape)
+            # print(arr_E.shape)
             arr_N = spectrogram_arr(data[:,1], dpi)
-            print(arr_N.shape)
+            # print(arr_N.shape)
             arr_Z = spectrogram_arr(data[:,2], dpi)
-            print(arr_Z.shape)
+            # print(arr_Z.shape)
             
             # img_E = Image.fromarray(arr_E, 'RGB')
             # img_E.save(save_folder + traces[i] + '_E.png')
@@ -128,16 +132,16 @@ for cnt, n in enumerate(range(len(starts))):
             # print("ENZ array:", arr_ENZ.shape)
             
             img = Image.fromarray(arr_ENZ, 'RGB')
-            img.save(save_folder + traces[i] + '.png')    
+            img.save(img_save_pth)    
         except:
             print('String index out of range')
+        sys.stdout.write('\rGenerated Spectrograms for batch %04d: %04d of %04d' % (cnt, i+1, len(traces))) # It is okay to have batch_no != len(traces) sometimes due to multi-processing
 
 
     # create images for selected data (runs in parallel using joblib)
-    start = time.time()
-    print(start)
+    start = time.time(); # print(start)
     Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,len(traces))) # run make_images loop in parallel on all but 2 cores for each value of i
-
+    # Parallel(n_jobs=-2)(delayed(make_images)(i) for i in range(0,10))
+    # make_images(1000)
     end = time.time()
-    print(f'Took {end-start} s')
-    break
+    print(f' | Took {end-start} s')
