@@ -65,6 +65,13 @@ print(f'No. of waveforms: {len(eqlist)}')
 starts = list(np.linspace(data_start, data_end-data_interval, int((data_end-data_start)/data_interval)))
 ends = list(np.linspace(data_interval, data_end, int((data_end-data_start)/data_interval)))
 
+# Normalize according to max abs value of ENZ channels (Does not work)
+# def normalize_wf(wf_data):
+#     abs_max = np.abs(wf_data).max()
+#     wf_data /= abs_max
+#     wf_data *= 1E8
+#     return wf_data
+
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140]).astype(np.uint8)
 
@@ -106,6 +113,7 @@ for cnt, n in enumerate(range(len(starts))):
 
             img_save_pth = save_folder + traces[i] + '.png'
             data = np.array(dataset)
+            # data = normalize_wf(data)
             
             # waveforms, 3 channels: first row: E channel, second row: N channel, third row: Z channel
             arr_E = spectrogram_arr(data[:,0], dpi)
