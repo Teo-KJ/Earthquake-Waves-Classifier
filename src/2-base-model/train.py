@@ -182,9 +182,9 @@ class Seismic():
         print(model.summary())
         
         # Set model save path
-        saved_model_path = f'./saved_models/waves_{str(self.choose_dataset_size)}dataset_{self.model_type}_{self.target}_epochs{self.epochs}_{format(datetime.now().strftime("%Y%m%d"))}'
+        self.saved_model_path = f'./saved_models/waves_{str(self.choose_dataset_size)}dataset_{self.model_type}_{self.target}_epochs{self.epochs}_{format(datetime.now().strftime("%Y%m%d"))}'
         # Save entire model to a HDF5 file
-        model.save(saved_model_path)
+        model.save(self.saved_model_path)
         self.model = model
 
     def evaluate_classification_model(self):
@@ -227,7 +227,7 @@ class Seismic():
         disp.plot(cmap='Blues', values_format='')
         plt.title(f'Classification CNN Results ({self.epochs} epochs)')
         plt.tight_layout()
-        plt.savefig('confusion_matrix.png')
+        plt.savefig(self.saved_model_path + '/confusion_matrix.png')
         # plt.show()
         
         # plot accuracy history
@@ -239,44 +239,8 @@ class Seismic():
         ax.set_ylabel('Accuracy')
         ax.set_xlabel('Epoch')
         ax.legend(['train','test'])
-        plt.savefig('model_accuracy.png')
+        plt.savefig(self.saved_model_path + '/model_accuracy.png')
         # plt.show()
-        
-    def evaluate_regression_model(self):
-        print('Evaluating model on test dataset')
-        self.test_loss = self.model.evaluate(self.test_images, self.test_labels, verbose=1) # get model evaluation metrics
-        print(f'Test data loss: {self.test_loss}')
-        
-        print('Getting predictions')
-        self.predicted = self.model.predict(self.test_images) # get target value predictions for each image
-
-        # plot scatterplot of observed values vs. predicted values for target
-        plt.style.use('ggplot')
-        fig, ax = plt.subplots(figsize=(7,7))
-        ax.scatter(self.test_labels,self.predicted,alpha=0.25)
-        point1 = [0,0]
-        point2 = [6,6]
-        xvalues = [point1[0], point2[0]]
-        yvalues = [point1[1], point2[1]]
-        ax.plot(xvalues,yvalues,color='blue')
-        ax.set_ylabel('Predicted Value')
-        ax.set_xlabel('Observed Value')
-        ax.set_title(f'Regression CNN Results ({self.epochs} epochs)')
-        plt.tight_layout()
-        plt.savefig('true_vs_predicted.png')
-        plt.show()
-
-        # plot model loss history
-        fig, ax = plt.subplots(figsize=(7,7))
-        ax.plot(self.history.history['loss'])
-        ax.plot(self.history.history['val_loss'])
-        ax.set_title('Model Accuracy')
-        ax.set_ylabel('Loss')
-        ax.set_xlabel('Epoch')
-        ax.legend(['train','test'])
-        plt.savefig('model_loss.png')
-        plt.show()
-        
 
     
 # Using the class for a classification CNN
