@@ -75,7 +75,7 @@ def get_paths(chunk_id, processed=True):
 
 data_dict = {}
 for chunk_id in chunk_ids:
-    processed = True if chunk_id == 1 else False
+    processed = False if chunk_id == 1 else True
     csv_pth, eqpath = get_paths(chunk_id, processed=processed)
     data_dict[chunk_id] = {
         'csv': csv_pth,
@@ -205,6 +205,8 @@ for id, id_info_dict in data_dict.items():
 
     eqlist = chunk_csv['trace_name'].to_list()
     print(f'No. of waveforms in chunk {id}: {len(eqlist)}')
+
+    data_end = min(len(eqlist), data_end)
     #random_signals = np.random.choice(eqlist,80000,replace=False) # turn on to get random sample of signals
     starts = list(np.linspace(data_start, data_end-data_interval, int((data_end-data_start)/data_interval)))
     ends = list(np.linspace(data_interval, data_end, int((data_end-data_start)/data_interval)))
