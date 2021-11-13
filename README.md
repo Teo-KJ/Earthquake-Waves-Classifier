@@ -2,16 +2,13 @@
 Project for NTU CZ4042 Neural Network and Deep Learning
 
 ## Dataset:   
-[Kaggle: Classifying heartbeat anomalies from stethoscope audio](https://www.kaggle.com/kinguistics/heartbeat-sounds)
-
 
 Files to be used:
-- set_b/{audio_files}
-- set_b.csv
+- 
 
-Data: 656 sound data files (varying volume/length)  
+Data:  
 Labels (4 classes): 
-- normal, extrastole, artifact, murmur
+- 
 
 ## EDA:
 - Out of 656 audio files, check how many missing labels.
