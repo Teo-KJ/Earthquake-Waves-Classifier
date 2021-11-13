@@ -41,7 +41,7 @@ from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score,
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
 
-from model import ClassfierCNN, RegressionCNN
+from model import ClassfierCNN
 
 keras = tf.keras
 
@@ -116,80 +116,29 @@ class Seismic():
         min_wave_type_size = min(len(self.noise_traces_array), len(self.p_traces_array), len(self.s_traces_array))
 
         if self.model_type == 'classification':
-
-            # if choose_dataset_size == 'full':
-            #     # select only the rows in the metadata dataframe which correspond to images
-            #     print('Selecting traces matching images in directory')
-            #     self.img_dataset = self.full_csv.loc[self.full_csv['trace_name'].isin(self.traces_array)] # select rows from the csv that have matching image files
-            #     self.labels = self.img_dataset['trace_category'] # target variable, 'earthquake' or 'noise'
-            #     self.labels = np.array(self.labels.map(lambda x: 1 if x == 'earthquake_local' else 0)) # transform target variable to numerical categories
-            #     print(f'The number of traces in the directory is {len(self.img_dataset)}')
-            #     count = 0
-            #     for i in range(0,len(self.img_dataset['trace_name'])): # loop through images and read them into the imgs array
-            #         count += 0
-            #         print(f'Working on trace # {count}')
-            #         img = Image.open(self.dir+'/'+self.img_dataset['trace_name'].iloc[i]+'.png') # read in image as grayscale image
-            #         self.imgs.append(img)
-            #     self.imgs = np.array(self.imgs)
-            if type(choose_dataset_size) == int:
-                choose_dataset_size = min(min_wave_type_size, choose_dataset_size)
-                print(f'Dataset size: {choose_dataset_size}')
-                
-                # random choice of images from the directory
-                choose_p_dataset = random.sample(self.p_traces_array, choose_dataset_size)
-                choose_s_dataset = random.sample(self.s_traces_array, choose_dataset_size)
-                choose_noise_dataset = random.sample(self.noise_traces_array, choose_dataset_size)
-
-                self.img_dataset = choose_noise_dataset + choose_p_dataset + choose_s_dataset
-                self.labels = np.array([0] * choose_dataset_size + [1] * choose_dataset_size + [2] * choose_dataset_size) # target variable, 'noise' is 0 | 'P' is 1 | 'S' is 2
-                len_img_dataset = len(self.img_dataset)
-                print(f'The number of traces in the directory is {len_img_dataset}')
-                for i, img_pth in enumerate(self.img_dataset): # loop through trace names in filtered dataframe and append images to imgs array
-                    temp_img = Image.open(img_pth+'.png') # read in image
-                    img = temp_img.copy()
-                    self.imgs.append(np.asarray(img, dtype=np.uint8))
-                    temp_img.close()
-                    sys.stdout.write('\rWorking on trace %04d of %04d' % (i+1, len_img_dataset))
-                print()
-                self.imgs = np.array(self.imgs)   
+            if choose_dataset_size <= 0:
+                choose_dataset_size = min_wave_type_size
             else:
-                print('Error: please choose either "full" for variable choose_dataset_size to use the full dataset, or provide an integer number of random samples to take from the dataset')
-                        
-        # elif self.model_type == 'regression':
-        #     print(f'The number of all traces in the directory including noise is {len(self.traces_array)}')
-        #     local_quakes = self.full_csv[self.full_csv['trace_category'] == 'earthquake_local'] # get only signals corresponding to local earthquakes, not noise
-        #     local_quakes_data = local_quakes.loc[local_quakes['trace_name'].isin(self.traces_array)]
-            
-            # if choose_dataset_size == 'full':
-            #     self.img_dataset = local_quakes.loc[local_quakes['trace_name'].isin(self.traces_array)]
-            #     print(f'The number of all earthquakes in the directory excluding noise is {len(self.img_dataset)}')
-            #     self.labels = self.img_dataset[target] # target variable
+                choose_dataset_size = min(min_wave_type_size, choose_dataset_size)
+            print(f'Dataset size: {choose_dataset_size}')
                 
-            #     count = 0
-            #     for i in range(0,len(self.img_dataset['trace_name'])): # loop through the images dataframe and read in the images with matching trace names
-            #         count += 1
-            #         print(f'Working on trace # {count}')
-            #         img = Image.open(dir+'/'+self.img_dataset['trace_name'].iloc[i]+'.png') # read in image as grayscale image
-            #         self.imgs.append(img)
-            #     self.imgs = np.array(self.imgs)
-                
-            # if type(choose_dataset_size) == int:
-            
-            #     choose_local_quakes = np.random.choice(np.array(local_quakes_data['trace_name']), choose_dataset_size, replace=False)
-            #     self.img_dataset = local_quakes_data.loc[local_quakes_data['trace_name'].isin(choose_local_quakes)]
-            #     self.labels = self.img_dataset[self.target] # target variable
-                
-            #     count = 0
-            #     for i in range(0,len(self.img_dataset['trace_name'])): # loop through dataframe and read in images corresponding to trace names in data frame
-            #         count += 1
-            #         print(f'Working on trace # {count}')
-            #         img = Image.open(dir+'/'+self.img_dataset['trace_name'].iloc[i]+'.png') # read in image as grayscale image
-            #         self.imgs.append(img)
-            #     self.imgs = np.array(self.imgs)
-                
-            # else:
-            #     print('Error: please choose either "full" for variable choose_dataset_size to use the full dataset, or provide an integer number of random samples to take from the dataset')
-                
+            # random choice of images from the directory
+            choose_p_dataset = random.sample(self.p_traces_array, choose_dataset_size)
+            choose_s_dataset = random.sample(self.s_traces_array, choose_dataset_size)
+            choose_noise_dataset = random.sample(self.noise_traces_array, choose_dataset_size)
+
+            self.img_dataset = choose_noise_dataset + choose_p_dataset + choose_s_dataset
+            self.labels = np.array([0] * choose_dataset_size + [1] * choose_dataset_size + [2] * choose_dataset_size) # target variable, 'noise' is 0 | 'P' is 1 | 'S' is 2
+            len_img_dataset = len(self.img_dataset)
+            print(f'The number of traces in the directory is {len_img_dataset}')
+            for i, img_pth in enumerate(self.img_dataset): # loop through trace names in filtered dataframe and append images to imgs array
+                temp_img = Image.open(img_pth+'.png') # read in image
+                img = temp_img.copy()
+                self.imgs.append(np.asarray(img, dtype=np.uint8))
+                temp_img.close()
+                sys.stdout.write('\rWorking on trace %04d of %04d' % (i+1, len_img_dataset))
+            print()
+            self.imgs = np.array(self.imgs)   
         else:
             print('Error: please choose either "classification" or "regression" for CNN model type')
  
@@ -237,31 +186,6 @@ class Seismic():
         # Save entire model to a HDF5 file
         model.save(saved_model_path)
         self.model = model
-        
-    # def regression_cnn(self, epochs):
-    #     self.epochs = epochs
-        
-    #     # set callbacks so that the model will be saved after each epoch
-    #     callbacks = [
-    #         keras.callbacks.ModelCheckpoint(
-    #             filepath=f'./saved_models/waves_{str(self.choose_dataset_size)}dataset_{self.model_type}_{self.target}_epochs{self.epochs}_{format(datetime.now().strftime("%Y%m%d"))}',
-    #             save_freq='epoch')
-    #     ]
-
-    #     # build CNN on dataset
-    #     print('Building Regression CNN model')
-    #     model = RegressionCNN.create_model()
-
-    #     self.history = model.fit(self.train_images, self.train_labels, epochs=epochs, callbacks=callbacks, validation_split=0.2) # fit model and save model loss history
-
-    #     print(model.summary())
-        
-    #     # Set model save path
-    #     saved_model_path = f'./saved_models/waves_{str(self.choose_dataset_size)}dataset_{self.model_type}_{self.target}_epochs{self.epochs}_{format(datetime.now().strftime("%Y%m%d"))}' # _%H%M%S
-    #     # Save entire model to a HDF5 file
-    #     model.save(saved_model_path)
-    #     self.model = model
-
 
     def evaluate_classification_model(self):
         print('Evaluating model on test dataset')
@@ -278,14 +202,14 @@ class Seismic():
         print(self.cm)
 
         accuracy = accuracy_score(self.test_labels,  self.predicted_classes)
-        print(f'Accuracy: {accuracy}')
+        print(f'\nAccuracy: {accuracy}')
 
         # Micro average metrics: 
         # Calculate metrics globally by counting the total TPs, FNs & FPs.
-        precision = precision_score(self.test_labels, self.predicted_classes, average='micro')
+        precision = precision_score(self.test_labels, self.predicted_classes, average='micro', labels=np.unique(self.predicted_classes))
         recall = recall_score(self.test_labels, self.predicted_classes, average='micro')
-        f1 = f1_score(self.test_labels, self.predicted_classes, average='micro')
-        print('[Micro Average]:')
+        f1 = f1_score(self.test_labels, self.predicted_classes, average='micro', labels=np.unique(self.predicted_classes))
+        print('\n[Micro Average]:')
         print(f'Precision: {precision}\nRecall: {recall}\nF1 score: {f1}')
 
         # Weighted average metrics: 
@@ -294,7 +218,7 @@ class Seismic():
         precision = precision_score(self.test_labels, self.predicted_classes, average='weighted')
         recall = recall_score(self.test_labels, self.predicted_classes, average='weighted')
         f1 = f1_score(self.test_labels, self.predicted_classes, average='weighted', labels=np.unique(self.predicted_classes))
-        print('[weighted Average]:')
+        print('\n[weighted Average]:')
         print(f'Precision: {precision}\nRecall: {recall}\nF1 score: {f1}')
 
         # plot confusion matrix
@@ -356,16 +280,10 @@ class Seismic():
 
     
 # Using the class for a classification CNN
-s = Seismic(model_type='classification', target='trace_category', choose_dataset_size=50000, full_csv=full_csv, dir=dir) # initialize the class
+s = Seismic(model_type='classification', target='trace_category', choose_dataset_size=-1, full_csv=full_csv, dir=dir) # initialize the class
 s.train_test_split(test_size=0.25, random_state=42) # train_test_split
 s.classification_cnn(epochs=15) # use the classification cnn method with 15 epochs
 s.evaluate_classification_model() # evaluate the model
-
-# Using the class for a regression CNN
-# s = Seismic(model_type='regression',target='source_magnitude',choose_dataset_size=60000,full_csv,dir) # initialize the class
-# s.train_test_split(test_size=0.25,random_state=41) # train_test_split
-# s.regression_cnn(target='source_magnitude',epochs=15) # use the regression cnn method with 15 epochs with a target variable
-# s.evaluate_regression_model() # evaluate the model
 
 
 
