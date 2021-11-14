@@ -1,5 +1,7 @@
-# Heartbeat-Sounds-Classifier
+# Earthquake-Waves-Classifier
 Project for NTU CZ4042 Neural Network and Deep Learning
+
+by Wilson Teng, Irvin Ting, Teo Kai Jie
 
 ## Dataset:   
 [Kaggle: Classifying heartbeat anomalies from stethoscope audio](https://www.kaggle.com/kinguistics/heartbeat-sounds)
