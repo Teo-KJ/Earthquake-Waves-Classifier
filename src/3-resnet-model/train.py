@@ -41,7 +41,7 @@ from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score,
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
 
-from model import ClassfierCNN
+from model import ResNetCNN
 
 keras = tf.keras
 
@@ -159,8 +159,8 @@ class Seismic():
         img_width = self.train_images.shape[2] # get width of each image in pixels
 
         print('Resizing images')
-        self.train_images = self.train_images.reshape(-1,img_height,img_width,3) # reshape to input into CNN which requires a 4-tensor
-        self.test_images = self.test_images.reshape(-1,img_height,img_width,3) # reshape to input into CNN which requires a 4-tensor
+        self.train_images = self.train_images.reshape(-1,img_height,img_width,3) # reshape to input into CNN which requires a 4D-tensor
+        self.test_images = self.test_images.reshape(-1,img_height,img_width,3) # reshape to input into CNN which requires a 4D-tensor
 
     def classification_cnn(self, epochs):
         self.epochs = epochs
@@ -175,7 +175,7 @@ class Seismic():
         # build CNN on dataset
         print('Building CNN model')
         img_shape = self.train_images.shape[1:]
-        model = ClassfierCNN().create_model(img_shape)
+        model = ResNetCNN().create_model(img_shape)
 
         self.history = model.fit(self.train_images, self.train_labels, epochs=epochs, callbacks=callbacks, validation_split=0.2) # fit model and save history
 
