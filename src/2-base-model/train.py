@@ -175,7 +175,7 @@ class Seismic():
         # build CNN on dataset
         print('Building CNN model')
         img_shape = self.train_images.shape[1:]
-        model = ClassfierCNN.create_model(img_shape)
+        model = ClassfierCNN().create_model(img_shape)
 
         self.history = model.fit(self.train_images, self.train_labels, epochs=epochs, callbacks=callbacks, validation_split=0.2) # fit model and save history
 
