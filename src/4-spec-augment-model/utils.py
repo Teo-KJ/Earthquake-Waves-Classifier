@@ -1,6 +1,33 @@
+import random
+
 import numpy as np
 from PIL import Image
 from tensorflow.keras.utils import Sequence
+
+
+# Created by DAVIDS
+# https://www.kaggle.com/davids1992/specaugment-quick-implementation
+def spec_augment(spec: np.ndarray, num_mask=2, 
+                 freq_masking_max_percentage=0.15, time_masking_max_percentage=0.15):
+
+    spec = spec.copy()
+    for i in range(num_mask):
+        all_frames_num, all_freqs_num, _ = spec.shape
+        freq_percentage = random.uniform(0.0, freq_masking_max_percentage)
+        
+        num_freqs_to_mask = int(freq_percentage * all_freqs_num)
+        f0 = np.random.uniform(low=0.0, high=all_freqs_num - num_freqs_to_mask)
+        f0 = int(f0)
+        spec[:, f0:f0 + num_freqs_to_mask] = 0
+
+        time_percentage = random.uniform(0.0, time_masking_max_percentage)
+        
+        num_frames_to_mask = int(time_percentage * all_frames_num)
+        t0 = np.random.uniform(low=0.0, high=all_frames_num - num_frames_to_mask)
+        t0 = int(t0)
+        spec[t0:t0 + num_frames_to_mask, :] = 0
+    
+    return spec
 
 
 class DataGenerator(Sequence):
@@ -9,7 +36,8 @@ class DataGenerator(Sequence):
     """
     def __init__(self, list_pths, list_labels,
                  to_fit=True, batch_size=32, dim=(100, 150),
-                 n_channels=3, n_classes=3, shuffle=True):
+                 n_channels=3, n_classes=3, shuffle=True,
+                 spec_aug_prob=0.0):
         """Initialization
         :param list_pths: list of all imgs pths to use in the generator
         :param list_labels: list of image labels
@@ -30,6 +58,7 @@ class DataGenerator(Sequence):
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.shuffle = shuffle
+        self.spec_aug_prob = spec_aug_prob
         self.on_epoch_end()
 
     def __len__(self):
@@ -76,8 +105,13 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, pth in enumerate(list_pths_temp):
-            # Store sample
-            X[i,] = self._load_image(pth)
+            # Augment w probabilty == self.spec_aug_prob
+            if random.random() <= self.spec_aug_prob: # augment
+                img = self._load_image(pth)
+                aug_img = spec_augment(img)
+                X[i,] = aug_img
+            else: # do not augment
+                X[i,] = self._load_image(pth)
 
         return X
 
