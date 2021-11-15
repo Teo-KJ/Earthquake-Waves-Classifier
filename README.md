@@ -13,3 +13,7 @@ Files to be used:
 Train and Validation Data Sets: Total 30,000 seismic signals
 Labels (3 classes): 
 - noise, P-waves, S-waves
+
+Evaluation Data Set: Total 300,000 seismic signals
+Labels (3 classes): 
+- noise, P-waves, S-waves
