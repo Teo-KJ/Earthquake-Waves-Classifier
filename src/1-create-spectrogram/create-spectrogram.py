@@ -202,7 +202,7 @@ def make_noise_images(i):
 ## Make images
 for id, id_info_dict in data_dict.items():
     chunk_csv = pd.read_csv(csv_pth, dtype=dtypes, parse_dates=date_cols, encoding='utf-8')
-
+    eqpath = id_info_dict['eqpath']
     eqlist = chunk_csv['trace_name'].to_list()
     print(f'No. of waveforms in chunk {id}: {len(eqlist)}')
 
