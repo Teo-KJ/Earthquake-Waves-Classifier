@@ -204,7 +204,7 @@ class SeismicEvaluation():
 # Using the class for a classification CNN
 s = SeismicEvaluation(model_type='classification', target='trace_category', choose_dataset_size=-1, dir=dir) # initialize the class
 
-# evaluate the model by inputting model pth
+# choose the model to evaluate by updating the specific model path parameter
 s.evaluate_classification_model(
     model_pth='../3-resnet-model/saved_models/waves_-1dataset_classification_trace_category_epochs15_20211115', 
     img_save_pth='resnet'
