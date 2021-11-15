@@ -3,7 +3,7 @@ import tensorflow as tf
 keras = tf.keras
 
 class ClassfierCNN():
-    def create_model(img_shape, num_classes=3):
+    def create_model(self, img_shape, num_classes=3):
         model = keras.Sequential()
 
         model.add(keras.layers.Conv2D(32, kernel_size=(5, 5), activation = 'relu', padding = 'same')) # convolutional layer
