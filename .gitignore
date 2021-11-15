@@ -2,3 +2,4 @@
 .DS_Store
 *.hdf5
 *.pyc
+*.png

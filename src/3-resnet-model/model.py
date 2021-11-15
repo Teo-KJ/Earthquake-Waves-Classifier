@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import Tensor
 from tensorflow.keras.layers import (Add, AveragePooling2D, BatchNormalization,
                                      Conv2D, Dense, Dropout, Flatten, Input,
-                                     ReLU)
+                                     MaxPool2D, ReLU)
 from tensorflow.keras.models import Model
 
 keras = tf.keras
@@ -12,35 +12,36 @@ class ResNetCNN():
         pass
 
     # RELU + Batch Norm
-    def relu_bn(self, inputs: Tensor) -> Tensor:
-        relu = ReLU()(inputs)
-        bn = BatchNormalization()(relu)
-        return bn
+    def bn_relu(self, inputs: Tensor) -> Tensor:
+        bn = BatchNormalization()(inputs)
+        relu = ReLU()(bn)
+        return relu
     
     # ResNet block
     def residual_block(self,
         x: Tensor, 
-        downsample: bool, 
         filters: int, 
         kernel_size: int=3
     ) -> Tensor:
+        y = self.bn_relu(x)
         y = Conv2D(kernel_size=kernel_size,
-                strides= (1 if not downsample else 2),
+                strides= 2,
                 filters=filters,
-                padding="same")(x)
-        y = self.relu_bn(y)
+                padding="same")(y)
+
+        y = self.bn_relu(y)
         y = Conv2D(kernel_size=kernel_size,
                 strides=1,
                 filters=filters,
                 padding="same")(y)
 
-        if downsample:
-            x = Conv2D(kernel_size=1,
-                    strides=2,
-                    filters=filters,
-                    padding="same")(x)
-        out = Add()([x, y])
-        out = self.relu_bn(out)
+        residual = Conv2D(kernel_size=1, strides=1, filters=1)(y)
+
+        x = Conv2D(kernel_size=kernel_size,
+                strides=2,
+                filters=filters,
+                padding="same")(x)
+        out = Add()([x, residual])
         return out
 
     # Modified ResNet
@@ -53,20 +54,16 @@ class ResNetCNN():
         t = Conv2D(kernel_size=(5, 5),
                 filters=num_filters,
                 padding="same")(t)
-        t = self.relu_bn(t)
+        t = self.bn_relu(t)
         
-        num_blocks_list = [2, 5, 5, 2]
-        for i in range(len(num_blocks_list)):
-            num_blocks = num_blocks_list[i]
-            for j in range(num_blocks):
-                t = self.residual_block(t, downsample=(j==0 and i!=0), filters=num_filters)
-            num_filters *= 2
+        t = self.residual_block(t, filters=num_filters)
+        t = self.residual_block(t, filters=num_filters*2)
+        t = self.residual_block(t, filters=num_filters*4)
         
-        t = AveragePooling2D(4)(t)
-        t = Dropout(0.25)(t)
+        t = ReLU()(t)
         t = Flatten(input_shape=(img_shape[1], img_shape[2]))(t)
         t = Dense(16, activation='relu')(t)
-        t = Dropout(0.5)(t)
+        t = ReLU()(t)
         outputs = Dense(num_classes, activation='softmax')(t)
         
         model = Model(inputs, outputs)

@@ -152,7 +152,8 @@ class Seismic():
         self.train_generator = DataGenerator(
             self.train_images, self.train_labels,
             to_fit=True, batch_size=32, dim=(100, 150),
-            n_channels=3, n_classes=3, shuffle=True
+            n_channels=3, n_classes=3, shuffle=True,
+            spec_aug_prob=0.5
         )
         self.val_generator = DataGenerator(
             self.test_images, self.test_labels,
@@ -277,7 +278,7 @@ class Seismic():
 # Using the class for a classification CNN
 s = Seismic(model_type='classification', target='trace_category', choose_dataset_size=-1, full_csv=full_csv, dir=dir) # initialize the class
 s.train_test_split(test_size=0.25, random_state=42) # train_test_split
-s.classification_cnn(epochs=50) # use the classification cnn method with 15 epochs
+s.classification_cnn(epochs=15) # use the classification cnn method with 15 epochs
 s.evaluate_classification_model() # evaluate the model
 
 
