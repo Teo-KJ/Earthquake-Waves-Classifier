@@ -40,7 +40,7 @@ min_acceptable_duration = 500 # min fixed window duration
 chunk_ids = [3] # chunk 1 is noise, chunks 2-6 are earthquake signals
 assert min(chunk_ids) > 0 and max(chunk_ids) <= 6
 
-dataset_size = 100 #101246 # select start of data rows you want to pull from that chunk
+dataset_size = -1 #101246 # select start of data rows you want to pull from that chunk
 
 noise_buffer = 50
 
